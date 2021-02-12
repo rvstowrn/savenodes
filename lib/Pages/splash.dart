@@ -25,7 +25,7 @@ class _SplashPageState extends State<SplashPage> {
         nodeBox.put("auth", {"registered":false});
       }
       Timer(
-        Duration(seconds: 3),
+        Duration(seconds: 1),
         ()=>Navigator.pushNamed(context, "/auth")
       );
     });

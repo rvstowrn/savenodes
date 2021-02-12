@@ -8,6 +8,17 @@ class AuthPage extends StatefulWidget {
   _AuthPageState createState() => _AuthPageState();
 }
 
+
+List dummyList = [
+  { "path":"/path1","key":"1key1","value":"1val1"},
+  { "path":"/path1","key":"1key2","value":null},
+  { "path":"/path1/1key2","key":"2key2","value":"2val2"},
+  { "path":"/path2","key":"1key1","value":"1val1"},
+  { "path":"/path3","key":"hi","value":"to you"},
+  { "path":"/path1/1key2","key":"2key1","value":"2val1"},
+];
+
+
 class _AuthPageState extends State<AuthPage> {
   double maxWidth;
   double maxHeight;
@@ -94,20 +105,21 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   void handleAuth(){
-    String pin = pinController.text;
-    if(authOperation == "Login"){
-      if(pin == nodeBox.get("auth")["pin"]){
-        nodeBox.put("data", {"one":"oneval","two":{"check":"out","hi":{"hell":"no"}}});
-        Navigator.pushNamed(context, "/nodes");
-      }
-      else{
-        setState(() { msg = "Wrong pin"; });
-      }
-    }
-    else{
-      nodeBox.put("auth", {"registered":true,"pin":pin});
+    // String pin = pinController.text;
+    // if(authOperation == "Login"){
+    //   if(pin == nodeBox.get("auth")["pin"]){
+    //     nodeBox.put("data", dummyList);
+    //     Navigator.pushNamed(context, "/nodes");
+    //   }
+    //   else{
+    //     setState(() { msg = "Wrong pin"; });
+    //   }
+    // }
+    // else{
+      nodeBox.put("data", dummyList);
+      // nodeBox.put("auth", {"registered":true,"pin":pin});
       Navigator.pushNamed(context, "/nodes");
-    }
+    // }
   }
   
   

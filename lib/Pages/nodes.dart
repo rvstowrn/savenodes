@@ -15,39 +15,17 @@ class _NodesPageState extends State<NodesPage> {
   String filterText = "";
   TextEditingController keyController = TextEditingController();
   TextEditingController valueController = TextEditingController();
-  List<Map> nodes = new List();
-  Map dataMap = new Map();
-
-  void addToList(int level,Map parent,String key,List path){
-    if(parent[key] is String){
-      setState(() {
-        nodes.add({"key":key,"value":parent[key],"level":level,"path":path});
-      });
-    }
-    else{
-      if(key != "data"){
-        nodes.add({"key":key,"value":null,"level":level,"path":path});
-      }
-      parent[key].forEach((k,v){
-        addToList(level+1,parent[key],k,path+[key]);
-      });
-    }
-  }
-
-  void createNodeList(){
-    setState(() => nodes.clear() );
-    addToList(0, dataMap, "data",[]);
-  }
+  List nodes = new List();
 
   @override
   void initState() {
     super.initState();
     hiveSetup().then((value) { 
       setState(() { 
+
         nodeBox = globalBox;
-        dataMap["data"] = nodeBox.get("data"); 
+        nodes = nodeBox.get("data");
       });
-      createNodeList();
     });
   }
 
@@ -121,9 +99,9 @@ class _NodesPageState extends State<NodesPage> {
   */
   
   
-  Widget listCard(int level,String key,String value,List path,BuildContext context){
+  Widget listCard(int level,String key,String value,String path,BuildContext context){
     return Container(
-      margin: EdgeInsets.only(bottom:10,left:(level-1)*20.0),
+      margin: EdgeInsets.only(bottom:10,left:level*20.0),
       padding: EdgeInsets.all(5),
       decoration: new BoxDecoration(
         color: Colors.white,
@@ -146,12 +124,13 @@ class _NodesPageState extends State<NodesPage> {
             children:[
               value!=null?Container():
               IconButton(
-                onPressed: () => {},
+                onPressed: () => {
+                  
+                },
                 icon: Icon(Icons.add),
               ),
               IconButton(
                 onPressed: () {
-                  print(flattenMap(dataMap));
 
                 },
                 // showNodeDialog(context, "Edit",{"key":key,"value":value}),
@@ -159,7 +138,7 @@ class _NodesPageState extends State<NodesPage> {
               ),
               IconButton(
                 onPressed: (){
-                  createNodeList();
+                  // createNodeList();
                 },
                 icon: Icon(Icons.delete),
               ),
@@ -180,10 +159,10 @@ class _NodesPageState extends State<NodesPage> {
         child: ListView.builder(
           itemCount: nodes.length,
           itemBuilder: (BuildContext ctxt, int i) {
+            String path = nodes[i]["path"];
             String key = nodes[i]["key"];
             String value = nodes[i]["value"];
-            int level = nodes[i]["level"];
-            List path = nodes[i]["path"];
+            int level = path.split("/").length-2; 
             Widget item = Container();
             if(key.toLowerCase().contains(filterText.toLowerCase()) || filterText==""){
               item = listCard(level,key,value,path,context);
@@ -215,6 +194,15 @@ class _NodesPageState extends State<NodesPage> {
             nodeList(context),
           ] 
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: (){
+          setState(() {
+
+            nodes.sort((dynamic a, dynamic b)=>a["path"].compareTo(b["path"])); 
+          });
+        },
+        child: Icon(Icons.add),
       ),
     );
   }
