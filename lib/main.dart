@@ -12,6 +12,7 @@ class InitApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData( primarySwatch: Colors.orange),
       title: 'Save Nodes',
       initialRoute: '/splash',
       routes: {

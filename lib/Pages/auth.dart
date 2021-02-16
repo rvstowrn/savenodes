@@ -8,17 +8,6 @@ class AuthPage extends StatefulWidget {
   _AuthPageState createState() => _AuthPageState();
 }
 
-
-List dummyList = [
-  { "path":"/path1","key":"1key1","value":"1val1"},
-  { "path":"/path1","key":"1key2","value":null},
-  { "path":"/path1/1key2","key":"2key2","value":"2val2"},
-  { "path":"/path2","key":"1key1","value":"1val1"},
-  { "path":"/path3","key":"hi","value":"to you"},
-  { "path":"/path1/1key2","key":"2key1","value":"2val1"},
-];
-
-
 class _AuthPageState extends State<AuthPage> {
   double maxWidth;
   double maxHeight;
@@ -37,8 +26,8 @@ class _AuthPageState extends State<AuthPage> {
         Navigator.pushNamed(context, "/splash");
       }
       else{
-        bool resgistered = nodeBox.get("auth")["registered"];
-        setState(() => authOperation = resgistered ? "Login" : "Register" );
+        bool registered = nodeBox.get("auth")["registered"];
+        setState(() => authOperation = registered ? "Login" : "Register" );
       }
     });
   }
@@ -52,10 +41,6 @@ class _AuthPageState extends State<AuthPage> {
     if(maxWidth>maxHeight){
       setState(() { maxHeight = maxWidth; });
     }
-  }
-
-  Widget vSpace(k){
-    return SizedBox(height:k*1.0);
   }
 
   Widget label(str) {
@@ -72,7 +57,7 @@ class _AuthPageState extends State<AuthPage> {
   Widget input(){
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.red),
+        border: Border.all(color: Colors.orangeAccent),
         borderRadius:const BorderRadius.all(
           const Radius.circular(30.0),
         ), 
@@ -80,8 +65,8 @@ class _AuthPageState extends State<AuthPage> {
       margin: const EdgeInsets.symmetric(horizontal:40),
       child:new Theme(
         data: new ThemeData(
-          primaryColor: Colors.redAccent,
-          primaryColorDark: Colors.red,
+          primaryColor: Colors.orangeAccent,
+          primaryColorDark: Colors.orangeAccent,
         ),
         child:TextField(
           textAlign: TextAlign.center,
@@ -96,7 +81,7 @@ class _AuthPageState extends State<AuthPage> {
                 const Radius.circular(30.0),
               ),
             ),
-            fillColor: Colors.black87,
+            fillColor: Color.fromRGBO(0, 0, 0, 0.5),
             filled: true,
           ),
         ),
@@ -105,21 +90,19 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   void handleAuth(){
-    // String pin = pinController.text;
-    // if(authOperation == "Login"){
-    //   if(pin == nodeBox.get("auth")["pin"]){
-    //     nodeBox.put("data", dummyList);
-    //     Navigator.pushNamed(context, "/nodes");
-    //   }
-    //   else{
-    //     setState(() { msg = "Wrong pin"; });
-    //   }
-    // }
-    // else{
-      nodeBox.put("data", dummyList);
-      // nodeBox.put("auth", {"registered":true,"pin":pin});
+    String pin = pinController.text;
+    if(authOperation == "Login"){
+      if(pin == nodeBox.get("auth")["pin"]){
+        Navigator.pushNamed(context, "/nodes");
+      }
+      else{
+        setState(() { msg = "Wrong pin"; });
+      }
+    }
+    else{
+      nodeBox.put("auth", {"registered":true,"pin":pin});
       Navigator.pushNamed(context, "/nodes");
-    // }
+    }
   }
   
   
@@ -127,7 +110,7 @@ class _AuthPageState extends State<AuthPage> {
   Widget build(BuildContext context) {
     setDimensions(context);
     return Scaffold(
-      backgroundColor: Color.fromRGBO(49,27,146 ,1),
+      backgroundColor: Color.fromRGBO(255,152,0,1),
       body:SingleChildScrollView (
         child:Container( 
           height: maxHeight,
@@ -146,7 +129,7 @@ class _AuthPageState extends State<AuthPage> {
               vSpace(20),
               RaisedButton(
                 onPressed: handleAuth,
-                color: Colors.green,
+                color: Colors.orange[900],
                 elevation: 10,
                 child: Text(authOperation,
                   style: TextStyle(

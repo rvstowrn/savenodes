@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:hive/hive.dart';
-
+import 'package:savenodes/Pages/nodes.dart';
 import '../essentials.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -23,10 +23,14 @@ class _SplashPageState extends State<SplashPage> {
       setState(() => nodeBox = globalBox );
       if(!nodeBox.containsKey("auth")){
         nodeBox.put("auth", {"registered":false});
+        nodeBox.put("data", dummyList);
       }
       Timer(
         Duration(seconds: 1),
-        ()=>Navigator.pushNamed(context, "/auth")
+        (){
+          Navigator.pop(context);
+          Navigator.pushNamed(context, "/auth");
+        }
       );
     });
   }
@@ -36,7 +40,7 @@ class _SplashPageState extends State<SplashPage> {
     double screenWidth = MediaQuery. of(context). size. width;
     double screenHeight = MediaQuery. of(context). size. height;
     return Scaffold(
-      backgroundColor: Color.fromRGBO(49,27,146 ,1),
+      backgroundColor: Color.fromRGBO(255,152,0,1),
       body:Container(
         width: screenWidth,
         height: screenHeight,

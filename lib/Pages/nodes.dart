@@ -16,16 +16,17 @@ class _NodesPageState extends State<NodesPage> {
   TextEditingController keyController = TextEditingController();
   TextEditingController valueController = TextEditingController();
   List nodes = new List();
+  String valueType="String";
 
   @override
   void initState() {
     super.initState();
     hiveSetup().then((value) { 
       setState(() { 
-
         nodeBox = globalBox;
         nodes = nodeBox.get("data");
       });
+      updateNodes();
     });
   }
 
@@ -43,29 +44,55 @@ class _NodesPageState extends State<NodesPage> {
     );
   }
 
+  void updateNodes()=>setState((){
+    nodes.sort((a, b) => a["path"].compareTo(b["path"]));
+    nodeBox.put("data",nodes);
+  });
 
-
-/*
-  void addNode(){
-    String key = keyController.text; 
-    String value = valueController.text; 
-    nodeBox.put(key, value);
+  void addNode(path,String operationType){
+    Map obj = new Map();
+    String key = keyController.text;
+    if(operationType == "Edit"){
+      setState(() => nodes.removeWhere((element) => element["path"]==path) );    
+      obj["path"]=path;
+      obj["key"]=keyController.text;
+      obj["value"]=(valueType=="String")?valueController.text:null;
+    }
+    else{
+      obj["path"]=path+"/"+key;
+      obj["key"]=keyController.text;
+      obj["value"]=(valueType=="String")?valueController.text:null;
+    }
+    setState(() => nodes.add(obj));
     updateNodes();
   }
 
-  Widget nodeDialog(String operationType,Map data){
-    keyController.text = data["key"] != null ? data["key"] : "";
-    valueController.text = data["value"] != null ? data["value"] : "";
+  Widget nodeDialog(String operationType,node){
+    if(operationType=="Edit"){
+      keyController.text=node["key"];
+      if(node["value"]!=null){
+        valueController.text=node["value"];
+      }
+    }
     return AlertDialog(
       title: Text("$operationType Node"),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children:[
           TextField(controller: keyController),
-          TextField(controller: valueController,),
+          (valueType=="Map")?Container():TextField(controller: valueController,),
         ]
       ),
       actions : [
+        FlatButton(
+          onPressed: () {
+            keyController.clear();
+            valueController.clear();
+            setState(()=>valueType=(valueType=="String")?"Map":"String");
+            Navigator.of(context).pop();
+          },
+          child: Text("${valueType=='Map'?'String':'Map'}"),
+        ),
         FlatButton(
           onPressed: () {
             keyController.clear();
@@ -76,7 +103,7 @@ class _NodesPageState extends State<NodesPage> {
         ),
         FlatButton(
           onPressed: () {
-            addNode();
+            addNode(node["path"],operationType);
             keyController.clear();
             valueController.clear();
             Navigator.of(context).pop();
@@ -87,25 +114,27 @@ class _NodesPageState extends State<NodesPage> {
     );
   }
 
-  void showNodeDialog(BuildContext context,String operationType,Map data){
+  void showNodeDialog(BuildContext context,String operationType,node){
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return nodeDialog(operationType,data);
+        return nodeDialog(operationType,node);
       },
     );
   }
 
-  */
   
   
-  Widget listCard(int level,String key,String value,String path,BuildContext context){
+  Widget listCard(node,BuildContext context){
+    String path = node["path"];
+    String key = node["key"];
+    String value = node["value"];
+    int level = path.split("/").length-2; 
     return Container(
-      margin: EdgeInsets.only(bottom:10,left:level*20.0),
+      margin: EdgeInsets.only(bottom:0,left:level*10.0),
       padding: EdgeInsets.all(5),
       decoration: new BoxDecoration(
-        color: Colors.white,
-        boxShadow: [BoxShadow(),],
+        color: Colors.orange[800-100*(level+1)],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -114,37 +143,44 @@ class _NodesPageState extends State<NodesPage> {
             child:Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(key,style: TextStyle(fontSize:20),),
+                Text(
+                  key,
+                  style: TextStyle(
+                    fontSize:15,
+                    fontWeight: FontWeight.bold
+                  )
+                ),
                 SizedBox(height:5),
-                value==null?Container():Text(value,style: TextStyle(fontSize:15),)
+                value==null?Container():
+                  Text(
+                    value,
+                    style: TextStyle(
+                      fontSize:13,
+                      fontWeight: FontWeight.bold
+                    ),
+                  )
               ],
             )
           ),
           Row(
             children:[
               value!=null?Container():
-              IconButton(
-                onPressed: () => {
-                  
-                },
-                icon: Icon(Icons.add),
+              GestureDetector( 
+                onTap: () => showNodeDialog(context, "Add", node), 
+                child: Icon(Icons.add,size: 30) 
               ),
-              IconButton(
-                onPressed: () {
-
-                },
-                // showNodeDialog(context, "Edit",{"key":key,"value":value}),
-                icon: Icon(Icons.edit),
+              GestureDetector( 
+                onTap: () => showNodeDialog(context, "Edit", node), 
+                child: Icon(Icons.edit,size: 30) 
               ),
-              IconButton(
-                onPressed: (){
-                  // createNodeList();
+              (path =="/data")?Container():GestureDetector( 
+                onTap: (){
+                  setState(() => nodes.removeWhere((item) => item["path"].contains(path)));
                 },
-                icon: Icon(Icons.delete),
+                child: Icon(Icons.delete,size: 30),
               ),
             ]
           )
-          
         ]
       ),
     );
@@ -159,13 +195,10 @@ class _NodesPageState extends State<NodesPage> {
         child: ListView.builder(
           itemCount: nodes.length,
           itemBuilder: (BuildContext ctxt, int i) {
-            String path = nodes[i]["path"];
-            String key = nodes[i]["key"];
-            String value = nodes[i]["value"];
-            int level = path.split("/").length-2; 
             Widget item = Container();
-            if(key.toLowerCase().contains(filterText.toLowerCase()) || filterText==""){
-              item = listCard(level,key,value,path,context);
+            String path = nodes[i]["path"];
+            if(path.toLowerCase().contains(filterText.toLowerCase()) || filterText==""){
+              item = listCard(nodes[i],context);
             }
             return item;
           }  
@@ -182,11 +215,12 @@ class _NodesPageState extends State<NodesPage> {
     double screenHeight =  MediaQuery.of(context).size.height;
     double screenWidth =  MediaQuery.of(context).size.width;
     return Scaffold(
+      
       appBar: AppBar(title: Text("Save Nodes"),),
       body: Container(
         height: screenHeight,
         width: screenWidth,
-        padding: EdgeInsets.symmetric(vertical:10,horizontal:20),
+        padding: EdgeInsets.symmetric(vertical:10,horizontal:12),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -194,15 +228,6 @@ class _NodesPageState extends State<NodesPage> {
             nodeList(context),
           ] 
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: (){
-          setState(() {
-
-            nodes.sort((dynamic a, dynamic b)=>a["path"].compareTo(b["path"])); 
-          });
-        },
-        child: Icon(Icons.add),
       ),
     );
   }
